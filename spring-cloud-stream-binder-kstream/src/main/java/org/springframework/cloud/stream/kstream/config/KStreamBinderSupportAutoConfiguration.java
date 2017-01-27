@@ -37,31 +37,31 @@ import org.springframework.integration.codec.Codec;
 @EnableConfigurationProperties(KStreamBinderProperties.class)
 public class KStreamBinderSupportAutoConfiguration {
 
-    @Bean
-    public KStreamBuilder kStreamBuilder() {
-        return new KStreamBuilder();
-    }
+	@Bean
+	public KStreamBuilder kStreamBuilder() {
+		return new KStreamBuilder();
+	}
 
-    @Bean
-    public KStreamStreamListenerResultAdapter kStreamStreamListenerResultAdapter() {
-        return new KStreamStreamListenerResultAdapter();
-    }
+	@Bean
+	public KStreamStreamListenerResultAdapter kStreamStreamListenerResultAdapter() {
+		return new KStreamStreamListenerResultAdapter();
+	}
 
-    @Bean
-    public KStreamListenerParameterAdapter kStreamListenerParameterAdapter(CompositeMessageConverterFactory compositeMessageConverterFactory) {
-        return new KStreamListenerParameterAdapter(compositeMessageConverterFactory.getMessageConverterForAllRegistered());
-    }
+	@Bean
+	public KStreamListenerParameterAdapter kStreamListenerParameterAdapter(CompositeMessageConverterFactory compositeMessageConverterFactory) {
+		return new KStreamListenerParameterAdapter(compositeMessageConverterFactory.getMessageConverterForAllRegistered());
+	}
 
-    @Bean
-    public KStreamBoundElementFactory kStreamBindableTargetFactory(KStreamBuilder kStreamBuilder,
-                                                                   BindingServiceProperties bindingServiceProperties,
-                                                                   Codec codec,
-                                                                   CompositeMessageConverterFactory compositeMessageConverterFactory) {
-        return new KStreamBoundElementFactory(kStreamBuilder, bindingServiceProperties, codec, compositeMessageConverterFactory);
-    }
+	@Bean
+	public KStreamBoundElementFactory kStreamBindableTargetFactory(KStreamBuilder kStreamBuilder,
+																BindingServiceProperties bindingServiceProperties,
+																Codec codec,
+																CompositeMessageConverterFactory compositeMessageConverterFactory) {
+		return new KStreamBoundElementFactory(kStreamBuilder, bindingServiceProperties, codec, compositeMessageConverterFactory);
+	}
 
-    @Bean
-    public KStreamLifecycle kStreamLifecycle(TopologyBuilder topologyBuilder, KStreamBinderProperties kStreamBinderProperties) {
-        return new KStreamLifecycle(topologyBuilder, kStreamBinderProperties);
-    }
+	@Bean
+	public KStreamLifecycle kStreamLifecycle(TopologyBuilder topologyBuilder, KStreamBinderProperties kStreamBinderProperties) {
+		return new KStreamLifecycle(topologyBuilder, kStreamBinderProperties);
+	}
 }

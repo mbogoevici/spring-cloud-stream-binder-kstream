@@ -72,8 +72,7 @@ public class KStreamBoundElementFactory extends AbstractBindingTargetFactory<KSt
 
 	EmbeddedHeadersMessageConverter embeddedHeadersMessageConverter = new EmbeddedHeadersMessageConverter();
 
-	public KStreamBoundElementFactory(KStreamBuilder streamBuilder,
-									  BindingServiceProperties bindingServiceProperties, Codec codec, CompositeMessageConverterFactory compositeMessageConverterFactory) {
+	public KStreamBoundElementFactory(KStreamBuilder streamBuilder, BindingServiceProperties bindingServiceProperties, Codec codec, CompositeMessageConverterFactory compositeMessageConverterFactory) {
 		super(KStream.class);
 		this.bindingServiceProperties = bindingServiceProperties;
 		this.kStreamBuilder = streamBuilder;
@@ -110,7 +109,7 @@ public class KStreamBoundElementFactory extends AbstractBindingTargetFactory<KSt
 				BindingProperties bindingProperties = bindingServiceProperties.getBindingProperties(name);
 				if (StringUtils.hasText(bindingProperties.getContentType())) {
 					final MessageConverter messageConverter = compositeMessageConverterFactory.getMessageConverterForType(MimeType.valueOf(bindingProperties.getContentType()));
-					delegate = delegate.map((k,v) -> {
+					delegate = delegate.map((k, v) -> {
 						Message<?> message = (Message<?>) v;
 						return new KeyValue<>(k, messageConverter.toMessage(message.getPayload(), new MutableMessageHeaders(((Message<?>) v).getHeaders())));
 					});
@@ -119,8 +118,6 @@ public class KStreamBoundElementFactory extends AbstractBindingTargetFactory<KSt
 			}
 		};
 	}
-
-
 
 
 	protected final MessageValues deserializePayloadIfNecessary(Message<?> message) {
@@ -149,8 +146,7 @@ public class KStreamBoundElementFactory extends AbstractBindingTargetFactory<KSt
 		if (payload instanceof byte[]) {
 			if (contentType == null || MimeTypeUtils.APPLICATION_OCTET_STREAM.equals(contentType)) {
 				return payload;
-			}
-			else {
+			} else {
 				return deserializePayload((byte[]) payload, contentType);
 			}
 		}
@@ -161,14 +157,12 @@ public class KStreamBoundElementFactory extends AbstractBindingTargetFactory<KSt
 		if ("text".equalsIgnoreCase(contentType.getType()) || MimeTypeUtils.APPLICATION_JSON.equals(contentType)) {
 			try {
 				return new String(bytes, "UTF-8");
-			}
-			catch (UnsupportedEncodingException e) {
+			} catch (UnsupportedEncodingException e) {
 				String errorMessage = "unable to deserialize [java.lang.String]. Encoding not supported. " + e.getMessage();
 				logger.error(errorMessage);
 				throw new SerializationFailedException(errorMessage, e);
 			}
-		}
-		else {
+		} else {
 			String className = JavaClassMimeTypeConversion.classNameFromMimeType(contentType);
 			try {
 				// Cache types to avoid unnecessary ClassUtils.forName calls.

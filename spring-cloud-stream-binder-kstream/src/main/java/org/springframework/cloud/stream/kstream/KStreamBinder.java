@@ -65,20 +65,19 @@ public class KStreamBinder extends AbstractBinder<KStream<Object, Object>, Consu
 	@Override
 	protected Binding<KStream<Object, Object>> doBindProducer(String name, KStream<Object, Object> outboundBindTarget, ProducerProperties properties) {
 		if (HeaderMode.embeddedHeaders.equals(properties.getHeaderMode())) {
-			outboundBindTarget = outboundBindTarget.map((k,v) -> {
+			outboundBindTarget = outboundBindTarget.map((k, v) -> {
 				if (v instanceof Message) {
 					try {
 						return new KeyValue<>(k, serializeAndEmbedHeadersIfApplicable((Message<?>) v));
 					} catch (Exception e) {
 						throw new IllegalArgumentException(e);
 					}
-				}
-				else {
+				} else {
 					throw new IllegalArgumentException("Wrong type of message " + v);
 				}
 			});
 		}
-		outboundBindTarget.map((k,v)-> new KeyValue<>((byte[])null, (byte[])v)).to(Serdes.ByteArray(), Serdes.ByteArray(), name);
+		outboundBindTarget.map((k, v) -> new KeyValue<>((byte[]) null, (byte[]) v)).to(Serdes.ByteArray(), Serdes.ByteArray(), name);
 		return new DefaultBinding<>(name, null, outboundBindTarget, null);
 	}
 
@@ -103,8 +102,7 @@ public class KStreamBinder extends AbstractBinder<KStream<Object, Object>, Consu
 		String[] headersToMap;
 		if (ObjectUtils.isEmpty(configurationProperties.getHeaders())) {
 			headersToMap = BinderHeaders.STANDARD_HEADERS;
-		}
-		else {
+		} else {
 			String[] combinedHeadersToMap = Arrays.copyOfRange(BinderHeaders.STANDARD_HEADERS, 0,
 					BinderHeaders.STANDARD_HEADERS.length + configurationProperties.getHeaders().length);
 			System.arraycopy(configurationProperties.getHeaders(), 0, combinedHeadersToMap,

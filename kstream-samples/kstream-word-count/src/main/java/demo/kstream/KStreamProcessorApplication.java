@@ -39,12 +39,12 @@ public class KStreamProcessorApplication {
 	@StreamListener("input")
 	@SendTo("output")
 	public KStream<?, WordCount> process(KStream<?, String> input) {
-		return  input
+		return input
 				.flatMapValues(value -> Arrays.asList(value.toLowerCase().split("\\W+")))
 				.map((key, word) -> new KeyValue<>(word, word))
 				.countByKey(TimeWindows.of("Count", 5000), Serdes.String())
 				.toStream()
-				.map((w,c) -> new KeyValue<>(null, new WordCount(w.key(), c)));
+				.map((w, c) -> new KeyValue<>(null, new WordCount(w.key(), c)));
 	}
 
 	public static void main(String[] args) {
