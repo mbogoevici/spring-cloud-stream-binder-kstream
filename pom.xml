@@ -19,7 +19,7 @@
 	</properties>
 	<modules>
         <module>spring-cloud-stream-binder-kstream</module>
-		<module>samples</module>
+		<module>kstream-samples</module>
 	</modules>
 
 	<dependencyManagement>
