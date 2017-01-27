@@ -78,7 +78,7 @@ public class KStreamBinder extends AbstractBinder<KStream<Object, Object>, Consu
 				}
 			});
 		}
-		outboundBindTarget.map((k,v)-> new KeyValue<>((byte[])k, (byte[])v)).to(Serdes.ByteArray(), Serdes.ByteArray(), name);
+		outboundBindTarget.map((k,v)-> new KeyValue<>((byte[])null, (byte[])v)).to(Serdes.ByteArray(), Serdes.ByteArray(), name);
 		return new DefaultBinding<>(name, null, outboundBindTarget, null);
 	}
 

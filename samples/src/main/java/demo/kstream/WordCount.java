@@ -19,15 +19,30 @@ package demo.kstream;
 /**
  * @author Marius Bogoevici
  */
-public class Bar {
+public class WordCount {
 
-	private String data;
+	private String word;
 
-	public String getData() {
-		return data;
+	private long count;
+
+	public WordCount(String word, long count) {
+		this.word = word;
+		this.count = count;
 	}
 
-	public void setData(String data) {
-		this.data = data;
+	public String getWord() {
+		return word;
+	}
+
+	public void setWord(String word) {
+		this.word = word;
+	}
+
+	public long getCount() {
+		return count;
+	}
+
+	public void setCount(long count) {
+		this.count = count;
 	}
 }

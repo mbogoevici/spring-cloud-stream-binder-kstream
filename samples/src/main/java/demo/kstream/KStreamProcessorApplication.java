@@ -16,8 +16,12 @@
 
 package demo.kstream;
 
+import java.util.Arrays;
+
+import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.kstream.KStream;
+import org.apache.kafka.streams.kstream.TimeWindows;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -34,8 +38,13 @@ public class KStreamProcessorApplication {
 
 	@StreamListener("input")
 	@SendTo("output")
-	public KStream<?, Foo> process(KStream<?, Bar> input) {
-		return input.map((k, v) -> KeyValue.pair(k, new Foo(v.getData().toUpperCase() + "-transformed")));
+	public KStream<?, WordCount> process(KStream<?, String> input) {
+		return  input
+				.flatMapValues(value -> Arrays.asList(value.toLowerCase().split("\\W+")))
+				.map((key, word) -> new KeyValue<>(word, word))
+				.countByKey(TimeWindows.of("Count", 5000), Serdes.String())
+				.toStream()
+				.map((w,c) -> new KeyValue<>(null, new WordCount(w.key(), c)));
 	}
 
 	public static void main(String[] args) {
