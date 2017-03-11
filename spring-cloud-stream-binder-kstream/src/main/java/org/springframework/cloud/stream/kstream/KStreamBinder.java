@@ -16,7 +16,11 @@
 
 package org.springframework.cloud.stream.kstream;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KeyValue;
@@ -32,10 +36,13 @@ import org.springframework.cloud.stream.binder.HeaderMode;
 import org.springframework.cloud.stream.binder.MessageValues;
 import org.springframework.cloud.stream.binder.ProducerProperties;
 import org.springframework.cloud.stream.kstream.config.KStreamBinderProperties;
+import org.springframework.core.serializer.support.SerializationFailedException;
 import org.springframework.integration.codec.Codec;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
+import org.springframework.util.Assert;
 import org.springframework.util.MimeType;
+import org.springframework.util.MimeTypeUtils;
 import org.springframework.util.ObjectUtils;
 
 /**
@@ -44,7 +51,7 @@ import org.springframework.util.ObjectUtils;
 public class KStreamBinder extends AbstractBinder<KStream<Object, Object>, ConsumerProperties, ProducerProperties> {
 
 	private final EmbeddedHeadersMessageConverter embeddedHeadersMessageConverter = new
-			EmbeddedHeadersMessageConverter();
+																							EmbeddedHeadersMessageConverter();
 
 	private Codec codec;
 
@@ -77,7 +84,7 @@ public class KStreamBinder extends AbstractBinder<KStream<Object, Object>, Consu
 				}
 			});
 		}
-		outboundBindTarget.map((k, v) -> new KeyValue<>((byte[]) null, (byte[]) v)).to(Serdes.ByteArray(), Serdes.ByteArray(), name);
+		outboundBindTarget.map((k, v) -> new KeyValue<>((byte[]) k, (byte[]) v)).to(Serdes.ByteArray(), Serdes.ByteArray(), name);
 		return new DefaultBinding<>(name, null, outboundBindTarget, null);
 	}
 
@@ -111,5 +118,75 @@ public class KStreamBinder extends AbstractBinder<KStream<Object, Object>, Consu
 			headersToMap = combinedHeadersToMap;
 		}
 		return headersToMap;
+	}
+
+	final MessageValues serializePayloadIfNecessary(Message<?> message) {
+		Object originalPayload = message.getPayload();
+		Object originalContentType = message.getHeaders().get(MessageHeaders.CONTENT_TYPE);
+
+		// Pass content type as String since some transport adapters will exclude
+		// CONTENT_TYPE Header otherwise
+		Object contentType = JavaClassMimeTypeConversion
+				.mimeTypeFromObject(originalPayload, ObjectUtils.nullSafeToString(originalContentType)).toString();
+		Object payload = serializePayloadIfNecessary(originalPayload);
+		MessageValues messageValues = new MessageValues(message);
+		messageValues.setPayload(payload);
+		messageValues.put(MessageHeaders.CONTENT_TYPE, contentType);
+		if (originalContentType != null && !originalContentType.toString().equals(contentType.toString())) {
+			messageValues.put(BinderHeaders.BINDER_ORIGINAL_CONTENT_TYPE, originalContentType.toString());
+		}
+		return messageValues;
+	}
+
+	private byte[] serializePayloadIfNecessary(Object originalPayload) {
+		if (originalPayload instanceof byte[]) {
+			return (byte[]) originalPayload;
+		} else {
+			ByteArrayOutputStream bos = new ByteArrayOutputStream();
+			try {
+				if (originalPayload instanceof String) {
+					return ((String) originalPayload).getBytes("UTF-8");
+				}
+				this.codec.encode(originalPayload, bos);
+				return bos.toByteArray();
+			} catch (IOException e) {
+				throw new SerializationFailedException("unable to serialize payload [" + originalPayload.getClass().getName() + "]", e);
+			}
+		}
+	}
+
+	private abstract static class JavaClassMimeTypeConversion {
+
+		private static ConcurrentMap<String, MimeType> mimeTypesCache = new ConcurrentHashMap<>();
+
+		static MimeType mimeTypeFromObject(Object payload, String originalContentType) {
+			Assert.notNull(payload, "payload object cannot be null.");
+			if (payload instanceof byte[]) {
+				return MimeTypeUtils.APPLICATION_OCTET_STREAM;
+			}
+			if (payload instanceof String) {
+				return MimeTypeUtils.APPLICATION_JSON_VALUE.equals(originalContentType) ? MimeTypeUtils.APPLICATION_JSON
+					: MimeTypeUtils.TEXT_PLAIN;
+			}
+			String className = payload.getClass().getName();
+			MimeType mimeType = mimeTypesCache.get(className);
+			if (mimeType == null) {
+				String modifiedClassName = className;
+				if (payload.getClass().isArray()) {
+					// Need to remove trailing ';' for an object array, e.g.
+					// "[Ljava.lang.String;" or multi-dimensional
+					// "[[[Ljava.lang.String;"
+					if (modifiedClassName.endsWith(";")) {
+						modifiedClassName = modifiedClassName.substring(0, modifiedClassName.length() - 1);
+					}
+					// Wrap in quotes to handle the illegal '[' character
+					modifiedClassName = "\"" + modifiedClassName + "\"";
+				}
+				mimeType = MimeType.valueOf("application/x-java-object;type=" + modifiedClassName);
+				mimeTypesCache.put(className, mimeType);
+			}
+			return mimeType;
+		}
+
 	}
 }

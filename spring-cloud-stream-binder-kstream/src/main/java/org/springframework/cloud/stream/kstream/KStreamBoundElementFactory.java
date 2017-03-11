@@ -90,7 +90,7 @@ public class KStreamBoundElementFactory extends AbstractBindingTargetFactory<KSt
 					return new KeyValue<>(key, value);
 				}
 				try {
-					MessageValues messageValues = embeddedHeadersMessageConverter.extractHeaders(MessageBuilder.withPayload((byte[]) value).build(), false);
+					MessageValues messageValues = embeddedHeadersMessageConverter.extractHeaders(MessageBuilder.withPayload((byte[]) value).build(), true);
 					messageValues = deserializePayloadIfNecessary(messageValues);
 					return new KeyValue<>(null, messageValues.toMessage());
 				} catch (Exception e) {
@@ -193,7 +193,7 @@ public class KStreamBoundElementFactory extends AbstractBindingTargetFactory<KSt
 			}
 			if (payload instanceof String) {
 				return MimeTypeUtils.APPLICATION_JSON_VALUE.equals(originalContentType) ? MimeTypeUtils.APPLICATION_JSON
-						: MimeTypeUtils.TEXT_PLAIN;
+					: MimeTypeUtils.TEXT_PLAIN;
 			}
 			String className = payload.getClass().getName();
 			MimeType mimeType = mimeTypesCache.get(className);
