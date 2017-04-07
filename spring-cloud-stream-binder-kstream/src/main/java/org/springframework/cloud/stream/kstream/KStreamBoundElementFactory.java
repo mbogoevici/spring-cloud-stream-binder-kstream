@@ -29,7 +29,7 @@ import org.apache.kafka.streams.kstream.KStreamBuilder;
 
 import org.springframework.cloud.stream.binder.BinderHeaders;
 import org.springframework.cloud.stream.binder.ConsumerProperties;
-import org.springframework.cloud.stream.binder.EmbeddedHeadersMessageConverter;
+import org.springframework.cloud.stream.binder.EmbeddedHeaderUtils;
 import org.springframework.cloud.stream.binder.HeaderMode;
 import org.springframework.cloud.stream.binder.MessageValues;
 import org.springframework.cloud.stream.binder.StringConvertingContentTypeResolver;
@@ -55,7 +55,6 @@ import org.springframework.util.StringUtils;
  */
 public class KStreamBoundElementFactory extends AbstractBindingTargetFactory<KStream> {
 
-
 	private final Log logger = LogFactory.getLog(this.getClass());
 
 	private final KStreamBuilder kStreamBuilder;
@@ -70,9 +69,8 @@ public class KStreamBoundElementFactory extends AbstractBindingTargetFactory<KSt
 
 	private CompositeMessageConverterFactory compositeMessageConverterFactory;
 
-	EmbeddedHeadersMessageConverter embeddedHeadersMessageConverter = new EmbeddedHeadersMessageConverter();
-
-	public KStreamBoundElementFactory(KStreamBuilder streamBuilder, BindingServiceProperties bindingServiceProperties, Codec codec, CompositeMessageConverterFactory compositeMessageConverterFactory) {
+	public KStreamBoundElementFactory(KStreamBuilder streamBuilder, BindingServiceProperties bindingServiceProperties,
+			Codec codec, CompositeMessageConverterFactory compositeMessageConverterFactory) {
 		super(KStream.class);
 		this.bindingServiceProperties = bindingServiceProperties;
 		this.kStreamBuilder = streamBuilder;
@@ -90,10 +88,12 @@ public class KStreamBoundElementFactory extends AbstractBindingTargetFactory<KSt
 					return new KeyValue<>(key, value);
 				}
 				try {
-					MessageValues messageValues = embeddedHeadersMessageConverter.extractHeaders(MessageBuilder.withPayload((byte[]) value).build(), true);
+					MessageValues messageValues = EmbeddedHeaderUtils
+							.extractHeaders(MessageBuilder.withPayload((byte[]) value).build(), true);
 					messageValues = deserializePayloadIfNecessary(messageValues);
 					return new KeyValue<>(null, messageValues.toMessage());
-				} catch (Exception e) {
+				}
+				catch (Exception e) {
 					throw new IllegalArgumentException(e);
 				}
 			});
@@ -108,10 +108,12 @@ public class KStreamBoundElementFactory extends AbstractBindingTargetFactory<KSt
 			public void setDelegate(KStream delegate) {
 				BindingProperties bindingProperties = bindingServiceProperties.getBindingProperties(name);
 				if (StringUtils.hasText(bindingProperties.getContentType())) {
-					final MessageConverter messageConverter = compositeMessageConverterFactory.getMessageConverterForType(MimeType.valueOf(bindingProperties.getContentType()));
+					final MessageConverter messageConverter = compositeMessageConverterFactory
+							.getMessageConverterForType(MimeType.valueOf(bindingProperties.getContentType()));
 					delegate = delegate.map((k, v) -> {
 						Message<?> message = (Message<?>) v;
-						return new KeyValue<>(k, messageConverter.toMessage(message.getPayload(), new MutableMessageHeaders(((Message<?>) v).getHeaders())));
+						return new KeyValue<>(k, messageConverter.toMessage(message.getPayload(),
+								new MutableMessageHeaders(((Message<?>) v).getHeaders())));
 					});
 				}
 				super.setDelegate(delegate);
@@ -119,10 +121,6 @@ public class KStreamBoundElementFactory extends AbstractBindingTargetFactory<KSt
 		};
 	}
 
-
-	protected final MessageValues deserializePayloadIfNecessary(Message<?> message) {
-		return deserializePayloadIfNecessary(new MessageValues(message));
-	}
 
 	protected final MessageValues deserializePayloadIfNecessary(MessageValues messageValues) {
 		Object originalPayload = messageValues.getPayload();
@@ -193,7 +191,7 @@ public class KStreamBoundElementFactory extends AbstractBindingTargetFactory<KSt
 			}
 			if (payload instanceof String) {
 				return MimeTypeUtils.APPLICATION_JSON_VALUE.equals(originalContentType) ? MimeTypeUtils.APPLICATION_JSON
-					: MimeTypeUtils.TEXT_PLAIN;
+						: MimeTypeUtils.TEXT_PLAIN;
 			}
 			String className = payload.getClass().getName();
 			MimeType mimeType = mimeTypesCache.get(className);

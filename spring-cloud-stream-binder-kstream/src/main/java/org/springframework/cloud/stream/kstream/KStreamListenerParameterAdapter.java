@@ -21,7 +21,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.kstream.KStream;
 
-import org.springframework.cloud.stream.binder.EmbeddedHeadersMessageConverter;
 import org.springframework.cloud.stream.binding.StreamListenerParameterAdapter;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
@@ -35,8 +34,6 @@ public class KStreamListenerParameterAdapter implements StreamListenerParameterA
 
 	private final Log logger = LogFactory.getLog(this.getClass());
 
-	private EmbeddedHeadersMessageConverter embeddedHeadersMessageConverter = new EmbeddedHeadersMessageConverter();
-
 	private final MessageConverter messageConverter;
 
 	public KStreamListenerParameterAdapter(MessageConverter messageConverter) {
@@ -45,24 +42,27 @@ public class KStreamListenerParameterAdapter implements StreamListenerParameterA
 
 	@Override
 	public boolean supports(Class bindingTargetType, MethodParameter methodParameter) {
-		return KStream.class.isAssignableFrom(bindingTargetType) && KStream.class.isAssignableFrom(methodParameter.getParameterType());
+		return KStream.class.isAssignableFrom(bindingTargetType)
+				&& KStream.class.isAssignableFrom(methodParameter.getParameterType());
 	}
 
 	@Override
 	public KStream adapt(KStream bindingTarget, MethodParameter parameter) {
 		ResolvableType resolvableType = ResolvableType.forMethodParameter(parameter);
-		final Class<?> valueClass = (resolvableType.getGeneric(1).getRawClass() != null) ? (resolvableType
-				.getGeneric(1).getRawClass()) : Object.class;
+		final Class<?> valueClass = (resolvableType.getGeneric(1).getRawClass() != null)
+				? (resolvableType.getGeneric(1).getRawClass()) : Object.class;
 		if (!Message.class.isAssignableFrom(valueClass)) {
 			return bindingTarget.map((o, o2) -> {
 				if (o2 instanceof Message) {
 					Object payload = ((Message<?>) o2).getPayload();
 					if (valueClass.isAssignableFrom(payload.getClass())) {
 						return new KeyValue<>(o, payload);
-					} else {
+					}
+					else {
 						return new KeyValue<>(o, messageConverter.fromMessage((Message) o2, valueClass));
 					}
-				} else {
+				}
+				else {
 					return new KeyValue<>(o, o2);
 				}
 			});

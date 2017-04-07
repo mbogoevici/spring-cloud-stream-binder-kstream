@@ -19,30 +19,21 @@ package org.springframework.cloud.stream.kstream.config;
 import java.util.Properties;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.cloud.stream.binder.kafka.properties.KafkaBinderConfigurationProperties;
 
 /**
  * @author Marius Bogoevici
  */
 @ConfigurationProperties("spring.cloud.stream.kstream.binder")
-public class KStreamBinderProperties {
+public class KStreamBinderProperties extends KafkaBinderConfigurationProperties {
 
-	private Properties configuration = new Properties();
+	private Properties streamConfiguration;
 
-	private String[] headers = new String[0];
-
-	public String[] getHeaders() {
-		return headers;
+	public Properties getStreamConfiguration() {
+		return streamConfiguration;
 	}
 
-	public void setHeaders(String[] headers) {
-		this.headers = headers;
-	}
-
-	public Properties getConfiguration() {
-		return configuration;
-	}
-
-	public void setConfiguration(Properties configuration) {
-		this.configuration = configuration;
+	public void setStreamConfiguration(Properties streamConfiguration) {
+		this.streamConfiguration = streamConfiguration;
 	}
 }

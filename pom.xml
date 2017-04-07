@@ -14,9 +14,9 @@
 	<properties>
 		<java.version>1.8</java.version>
 		<kafka.version>0.10.1.0</kafka.version>
-		<spring-kafka.version>1.1.1.RELEASE</spring-kafka.version>
+		<spring-kafka.version>1.1.4.BUILD-SNAPSHOT</spring-kafka.version>
 		<spring-integration-kafka.version>2.1.0.RELEASE</spring-integration-kafka.version>
-		<spring-cloud-stream.version>1.2.0.BUILD-SNAPSHOT</spring-cloud-stream.version>
+		<spring-cloud-stream.version>Chelsea.BUILD-SNAPSHOT</spring-cloud-stream.version>
 	</properties>
 
 	<modules>
@@ -28,13 +28,10 @@
 		<dependencies>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-stream</artifactId>
+				<artifactId>spring-cloud-stream-dependencies</artifactId>
 				<version>${spring-cloud-stream.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-stream-codec</artifactId>
-				<version>${spring-cloud-stream.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.kafka</groupId>
@@ -115,16 +112,16 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
-					<configuration>
+					<streamConfiguration>
 						<quiet>true</quiet>
-					</configuration>
+					</streamConfiguration>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
-					<configuration>
+					<streamConfiguration>
 						<redirectTestOutputToFile>true</redirectTestOutputToFile>
-					</configuration>
+					</streamConfiguration>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -143,13 +140,13 @@
 					<execution>
 						<id>checkstyle-validation</id>
 						<phase>validate</phase>
-						<configuration>
+						<streamConfiguration>
 							<configLocation>checkstyle.xml</configLocation>
 							<encoding>UTF-8</encoding>
 							<consoleOutput>true</consoleOutput>
 							<failsOnError>true</failsOnError>
 							<includeTestSourceDirectory>true</includeTestSourceDirectory>
-						</configuration>
+						</streamConfiguration>
 						<goals>
 							<goal>check</goal>
 						</goals>

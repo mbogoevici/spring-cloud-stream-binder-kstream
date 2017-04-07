@@ -16,10 +16,20 @@
 
 package org.springframework.cloud.stream.kstream.config;
 
+import org.apache.kafka.streams.StreamsConfig;
+
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.UnsatisfiedDependencyException;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.stream.kstream.KStreamBinder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.integration.codec.Codec;
+import org.springframework.kafka.annotation.EnableKafkaStreams;
+import org.springframework.kafka.annotation.KafkaStreamsDefaultConfiguration;
+import org.springframework.kafka.core.KStreamBuilderFactoryBean;
+
+import static org.springframework.kafka.annotation.KafkaStreamsDefaultConfiguration.DEFAULT_KSTREAM_BUILDER_BEAN_NAME;
+import static org.springframework.kafka.annotation.KafkaStreamsDefaultConfiguration.DEFAULT_STREAMS_CONFIG_BEAN_NAME;
 
 /**
  * @author Marius Bogoevici
@@ -27,8 +37,9 @@ import org.springframework.integration.codec.Codec;
 @Configuration
 public class KStreamBinderConfiguration {
 
+
 	@Bean
-	public KStreamBinder kStreamBinder(Codec codec, KStreamBinderProperties kStreamBinderProperties) {
-		return new KStreamBinder(codec, kStreamBinderProperties);
+	public KStreamBinder kStreamBinder(KStreamBinderProperties kStreamBinderProperties) {
+		return new KStreamBinder(kStreamBinderProperties);
 	}
 }
