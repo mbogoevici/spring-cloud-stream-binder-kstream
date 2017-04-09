@@ -60,7 +60,7 @@
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-stream-binder-org.springframework.cloud.stream.kstream</artifactId>
+				<artifactId>spring-cloud-stream-binder-kstream</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -112,16 +112,16 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
-					<streamConfiguration>
+					<configuration>
 						<quiet>true</quiet>
-					</streamConfiguration>
+					</configuration>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
-					<streamConfiguration>
+					<configuration>
 						<redirectTestOutputToFile>true</redirectTestOutputToFile>
-					</streamConfiguration>
+					</configuration>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -140,13 +140,13 @@
 					<execution>
 						<id>checkstyle-validation</id>
 						<phase>validate</phase>
-						<streamConfiguration>
+						<configuration>
 							<configLocation>checkstyle.xml</configLocation>
 							<encoding>UTF-8</encoding>
 							<consoleOutput>true</consoleOutput>
 							<failsOnError>true</failsOnError>
 							<includeTestSourceDirectory>true</includeTestSourceDirectory>
-						</streamConfiguration>
+						</configuration>
 						<goals>
 							<goal>check</goal>
 						</goals>

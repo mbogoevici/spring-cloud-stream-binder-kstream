@@ -18,22 +18,17 @@ package org.springframework.cloud.stream.kstream;
 
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.streams.KeyValue;
-import org.apache.kafka.streams.kstream.Aggregator;
 import org.apache.kafka.streams.kstream.ForeachAction;
-import org.apache.kafka.streams.kstream.Initializer;
 import org.apache.kafka.streams.kstream.JoinWindows;
+import org.apache.kafka.streams.kstream.KGroupedStream;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KTable;
 import org.apache.kafka.streams.kstream.KeyValueMapper;
 import org.apache.kafka.streams.kstream.Predicate;
-import org.apache.kafka.streams.kstream.Reducer;
 import org.apache.kafka.streams.kstream.TransformerSupplier;
 import org.apache.kafka.streams.kstream.ValueJoiner;
 import org.apache.kafka.streams.kstream.ValueMapper;
 import org.apache.kafka.streams.kstream.ValueTransformerSupplier;
-import org.apache.kafka.streams.kstream.Window;
-import org.apache.kafka.streams.kstream.Windowed;
-import org.apache.kafka.streams.kstream.Windows;
 import org.apache.kafka.streams.processor.ProcessorSupplier;
 import org.apache.kafka.streams.processor.StreamPartitioner;
 
@@ -79,8 +74,18 @@ public class KStreamDelegate<K, V> implements KStream<K, V> {
 	}
 
 	@Override
+	public void print(String streamName) {
+		delegate.print(streamName);
+	}
+
+	@Override
 	public void print(Serde<K> keySerde, Serde<V> valSerde) {
 		delegate.print(keySerde, valSerde);
+	}
+
+	@Override
+	public void print(Serde<K> keySerde, Serde<V> valSerde, String streamName) {
+		delegate.print(keySerde, valSerde, streamName);
 	}
 
 	@Override
@@ -89,8 +94,18 @@ public class KStreamDelegate<K, V> implements KStream<K, V> {
 	}
 
 	@Override
+	public void writeAsText(String filePath, String streamName) {
+		delegate.writeAsText(filePath, streamName);
+	}
+
+	@Override
 	public void writeAsText(String filePath, Serde<K> keySerde, Serde<V> valSerde) {
 		delegate.writeAsText(filePath, keySerde, valSerde);
+	}
+
+	@Override
+	public void writeAsText(String filePath, String streamName, Serde<K> keySerde, Serde<V> valSerde) {
+		delegate.writeAsText(filePath, streamName, keySerde, valSerde);
 	}
 
 	@Override
@@ -104,7 +119,7 @@ public class KStreamDelegate<K, V> implements KStream<K, V> {
 	}
 
 	@Override
-	public KStream<K, V>[] branch(Predicate<K, V>... predicates) {
+	public KStream<K, V>[] branch(Predicate<K, V>[] predicates) {
 		return delegate.branch(predicates);
 	}
 
@@ -189,8 +204,8 @@ public class KStreamDelegate<K, V> implements KStream<K, V> {
 	}
 
 	@Override
-	public <V1, R> KStream<K, R> leftJoin(KStream<K, V1> otherStream, ValueJoiner<V, V1, R> joiner, JoinWindows windows, Serde<K> keySerde, Serde<V1> otherValueSerde) {
-		return delegate.leftJoin(otherStream, joiner, windows, keySerde, otherValueSerde);
+	public <V1, R> KStream<K, R> leftJoin(KStream<K, V1> otherStream, ValueJoiner<V, V1, R> joiner, JoinWindows windows, Serde<K> keySerde, Serde<V> thisValSerde, Serde<V1> otherValueSerde) {
+		return delegate.leftJoin(otherStream, joiner, windows, keySerde, thisValSerde, otherValueSerde);
 	}
 
 	@Override
@@ -204,62 +219,27 @@ public class KStreamDelegate<K, V> implements KStream<K, V> {
 	}
 
 	@Override
-	public <W extends Window> KTable<Windowed<K>, V> reduceByKey(Reducer<V> reducer, Windows<W> windows, Serde<K> keySerde, Serde<V> valueSerde) {
-		return delegate.reduceByKey(reducer, windows, keySerde, valueSerde);
+	public <V1, V2> KStream<K, V2> leftJoin(KTable<K, V1> table, ValueJoiner<V, V1, V2> valueJoiner, Serde<K> keySerde, Serde<V> valSerde) {
+		return delegate.leftJoin(table, valueJoiner, keySerde, valSerde);
 	}
 
 	@Override
-	public <W extends Window> KTable<Windowed<K>, V> reduceByKey(Reducer<V> reducer, Windows<W> windows) {
-		return delegate.reduceByKey(reducer, windows);
+	public <K1> KGroupedStream<K1, V> groupBy(KeyValueMapper<K, V, K1> selector) {
+		return delegate.groupBy(selector);
 	}
 
 	@Override
-	public KTable<K, V> reduceByKey(Reducer<V> reducer, Serde<K> keySerde, Serde<V> valueSerde, String name) {
-		return delegate.reduceByKey(reducer, keySerde, valueSerde, name);
+	public <K1> KGroupedStream<K1, V> groupBy(KeyValueMapper<K, V, K1> selector, Serde<K1> keySerde, Serde<V> valSerde) {
+		return delegate.groupBy(selector, keySerde, valSerde);
 	}
 
 	@Override
-	public KTable<K, V> reduceByKey(Reducer<V> reducer, String name) {
-		return delegate.reduceByKey(reducer, name);
+	public KGroupedStream<K, V> groupByKey() {
+		return delegate.groupByKey();
 	}
 
 	@Override
-	public <T, W extends Window> KTable<Windowed<K>, T> aggregateByKey(Initializer<T> initializer, Aggregator<K, V, T> aggregator, Windows<W> windows, Serde<K> keySerde, Serde<T> aggValueSerde) {
-		return delegate.aggregateByKey(initializer, aggregator, windows, keySerde, aggValueSerde);
-	}
-
-	@Override
-	public <T, W extends Window> KTable<Windowed<K>, T> aggregateByKey(Initializer<T> initializer, Aggregator<K, V, T> aggregator, Windows<W> windows) {
-		return delegate.aggregateByKey(initializer, aggregator, windows);
-	}
-
-	@Override
-	public <T> KTable<K, T> aggregateByKey(Initializer<T> initializer, Aggregator<K, V, T> aggregator, Serde<K> keySerde, Serde<T> aggValueSerde, String name) {
-		return delegate.aggregateByKey(initializer, aggregator, keySerde, aggValueSerde, name);
-	}
-
-	@Override
-	public <T> KTable<K, T> aggregateByKey(Initializer<T> initializer, Aggregator<K, V, T> aggregator, String name) {
-		return delegate.aggregateByKey(initializer, aggregator, name);
-	}
-
-	@Override
-	public <W extends Window> KTable<Windowed<K>, Long> countByKey(Windows<W> windows, Serde<K> keySerde) {
-		return delegate.countByKey(windows, keySerde);
-	}
-
-	@Override
-	public <W extends Window> KTable<Windowed<K>, Long> countByKey(Windows<W> windows) {
-		return delegate.countByKey(windows);
-	}
-
-	@Override
-	public KTable<K, Long> countByKey(Serde<K> keySerde, String name) {
-		return delegate.countByKey(keySerde, name);
-	}
-
-	@Override
-	public KTable<K, Long> countByKey(String name) {
-		return delegate.countByKey(name);
+	public KGroupedStream<K, V> groupByKey(Serde<K> keySerde, Serde<V> valSerde) {
+		return delegate.groupByKey(keySerde, valSerde);
 	}
 }

@@ -52,7 +52,7 @@ public class KStreamBinderSupportAutoConfiguration {
 
 	@Bean(name = DEFAULT_KSTREAM_BUILDER_BEAN_NAME)
 	public KStreamBuilderFactoryBean defaultKStreamBuilder(
-																  @Qualifier(DEFAULT_STREAMS_CONFIG_BEAN_NAME) ObjectProvider<StreamsConfig> streamsConfigProvider) {
+			@Qualifier(DEFAULT_STREAMS_CONFIG_BEAN_NAME) ObjectProvider<StreamsConfig> streamsConfigProvider) {
 		StreamsConfig streamsConfig = streamsConfigProvider.getIfAvailable();
 		if (streamsConfig != null) {
 			KStreamBuilderFactoryBean kStreamBuilderFactoryBean = new KStreamBuilderFactoryBean(streamsConfig);
@@ -61,19 +61,19 @@ public class KStreamBinderSupportAutoConfiguration {
 		}
 		else {
 			throw new UnsatisfiedDependencyException(KafkaStreamsDefaultConfiguration.class.getName(),
-															DEFAULT_KSTREAM_BUILDER_BEAN_NAME, "streamsConfig", "There is no '" +
-																														DEFAULT_STREAMS_CONFIG_BEAN_NAME + "' StreamsConfig bean in the application context.\n" +
-																														"Consider to declare one or don't use @EnableKafkaStreams.");
+					DEFAULT_KSTREAM_BUILDER_BEAN_NAME, "streamsConfig",
+					"There is no '" + DEFAULT_STREAMS_CONFIG_BEAN_NAME
+							+ "' StreamsConfig bean in the application context.\n"
+							+ "Consider to declare one or don't use @EnableKafkaStreams.");
 		}
 	}
+
 	@Bean(KafkaStreamsDefaultConfiguration.DEFAULT_STREAMS_CONFIG_BEAN_NAME)
-	public StreamsConfig streamsConfig(KStreamBinderProperties kStreamBinderProperties){
+	public StreamsConfig streamsConfig(KStreamBinderProperties kStreamBinderProperties) {
 		Properties props = new Properties();
 		props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, kStreamBinderProperties.getKafkaConnectionString());
-		props.put(StreamsConfig.KEY_SERDE_CLASS_CONFIG,
-				Serdes.ByteArraySerde.class.getName());
-		props.put(StreamsConfig.VALUE_SERDE_CLASS_CONFIG,
-				Serdes.ByteArraySerde.class.getName());
+		props.put(StreamsConfig.KEY_SERDE_CLASS_CONFIG, Serdes.ByteArraySerde.class.getName());
+		props.put(StreamsConfig.VALUE_SERDE_CLASS_CONFIG, Serdes.ByteArraySerde.class.getName());
 		props.put(StreamsConfig.APPLICATION_ID_CONFIG, "default");
 		props.putAll(kStreamBinderProperties.getStreamConfiguration());
 		return new StreamsConfig(props);

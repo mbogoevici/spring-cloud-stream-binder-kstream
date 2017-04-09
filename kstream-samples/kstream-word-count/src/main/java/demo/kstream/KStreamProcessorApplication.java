@@ -18,7 +18,6 @@ package demo.kstream;
 
 import java.util.Arrays;
 
-import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.TimeWindows;
@@ -41,10 +40,9 @@ public class KStreamProcessorApplication {
 	public KStream<?, WordCount> process(KStream<?, String> input) {
 		return input
 				.flatMapValues(value -> Arrays.asList(value.toLowerCase().split("\\W+")))
-				.map((key, word) -> new KeyValue<>(word, word))
-				.countByKey(TimeWindows.of("Count", 5000), Serdes.String())
-				.toStream()
-				.map((w, c) -> new KeyValue<>(null, new WordCount(w.key(), c)));
+				.map((key, word) -> new KeyValue<>(word, 1))
+				.groupByKey().count(TimeWindows.of(5000), "Counts").toStream()
+				.map((w, c) -> new KeyValue<>(w, new WordCount(w.key(), c)));
 	}
 
 	public static void main(String[] args) {
