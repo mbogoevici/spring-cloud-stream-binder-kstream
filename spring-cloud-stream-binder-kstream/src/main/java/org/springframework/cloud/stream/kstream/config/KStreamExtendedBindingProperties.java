@@ -14,21 +14,14 @@
  * limitations under the License.
  */
 
-package demo.kstream;
+package org.springframework.cloud.stream.kstream.config;
 
-import org.apache.kafka.streams.kstream.KStream;
-
-import org.springframework.cloud.stream.annotation.Input;
-import org.springframework.cloud.stream.annotation.Output;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.cloud.stream.binder.kafka.properties.KafkaExtendedBindingProperties;
 
 /**
  * @author Marius Bogoevici
  */
-public interface KStreamProcessor {
-
-	@Input("input")
-	KStream<?, ?> input();
-
-	@Output("output")
-	KStream<?, ?> output();
+@ConfigurationProperties("spring.cloud.stream.kstream")
+public class KStreamExtendedBindingProperties extends KafkaExtendedBindingProperties {
 }

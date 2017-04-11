@@ -40,9 +40,9 @@ public class KStreamProcessorApplication {
 	public KStream<?, WordCount> process(KStream<?, String> input) {
 		return input
 				.flatMapValues(value -> Arrays.asList(value.toLowerCase().split("\\W+")))
-				.map((key, word) -> new KeyValue<>(word, 1))
+				.map((key, word) -> new KeyValue<>(word, word))
 				.groupByKey().count(TimeWindows.of(5000), "Counts").toStream()
-				.map((w, c) -> new KeyValue<>(w, new WordCount(w.key(), c)));
+				.map((w, c) -> new KeyValue<>(null, new WordCount(w.key(), c)));
 	}
 
 	public static void main(String[] args) {

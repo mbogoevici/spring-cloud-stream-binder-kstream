@@ -23,12 +23,17 @@ import org.apache.kafka.streams.kstream.KStream;
 import org.springframework.cloud.stream.binder.AbstractBinder;
 import org.springframework.cloud.stream.binder.BinderHeaders;
 import org.springframework.cloud.stream.binder.Binding;
-import org.springframework.cloud.stream.binder.ConsumerProperties;
 import org.springframework.cloud.stream.binder.DefaultBinding;
 import org.springframework.cloud.stream.binder.EmbeddedHeaderUtils;
+import org.springframework.cloud.stream.binder.ExtendedConsumerProperties;
+import org.springframework.cloud.stream.binder.ExtendedProducerProperties;
+import org.springframework.cloud.stream.binder.ExtendedPropertiesBinder;
 import org.springframework.cloud.stream.binder.HeaderMode;
 import org.springframework.cloud.stream.binder.MessageValues;
-import org.springframework.cloud.stream.binder.ProducerProperties;
+import org.springframework.cloud.stream.binder.kafka.properties.KafkaConsumerProperties;
+import org.springframework.cloud.stream.binder.kafka.properties.KafkaExtendedBindingProperties;
+import org.springframework.cloud.stream.binder.kafka.properties.KafkaProducerProperties;
+import org.springframework.cloud.stream.binder.kafka.provisioning.KafkaTopicProvisioner;
 import org.springframework.cloud.stream.kstream.config.KStreamBinderProperties;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
@@ -37,23 +42,30 @@ import org.springframework.util.MimeType;
 /**
  * @author Marius Bogoevici
  */
-public class KStreamBinder extends AbstractBinder<KStream<Object, Object>, ConsumerProperties, ProducerProperties> {
+public class KStreamBinder extends AbstractBinder<KStream<Object, Object>, ExtendedConsumerProperties<KafkaConsumerProperties>, ExtendedProducerProperties<KafkaProducerProperties>> implements ExtendedPropertiesBinder<KStream<Object, Object>, KafkaConsumerProperties, KafkaProducerProperties> {
 
 	private String[] headers;
 
-	public KStreamBinder(KStreamBinderProperties kStreamBinderProperties) {
+	private final KafkaTopicProvisioner kafkaTopicProvisioner;
+
+	private final KafkaExtendedBindingProperties kafkaExtendedBindingProperties;
+
+	public KStreamBinder(KStreamBinderProperties kStreamBinderProperties, KafkaTopicProvisioner kafkaTopicProvisioner, KafkaExtendedBindingProperties kafkaExtendedBindingProperties) {
 		this.headers = EmbeddedHeaderUtils.headersToEmbed(kStreamBinderProperties.getHeaders());
+		this.kafkaTopicProvisioner = kafkaTopicProvisioner;
+		this.kafkaExtendedBindingProperties = kafkaExtendedBindingProperties;
 	}
 
 	@Override
 	protected Binding<KStream<Object, Object>> doBindConsumer(String name, String group,
-			KStream<Object, Object> inputTarget, ConsumerProperties properties) {
+			KStream<Object, Object> inputTarget, ExtendedConsumerProperties<KafkaConsumerProperties> properties) {
+		this.kafkaTopicProvisioner.provisionConsumerDestination(name, group, properties);
 		return new DefaultBinding<>(name, group, inputTarget, null);
 	}
 
 	@Override
 	protected Binding<KStream<Object, Object>> doBindProducer(String name, KStream<Object, Object> outboundBindTarget,
-			ProducerProperties properties) {
+			ExtendedProducerProperties<KafkaProducerProperties> properties) {
 		if (HeaderMode.embeddedHeaders.equals(properties.getHeaderMode())) {
 			outboundBindTarget = outboundBindTarget.map((k, v) -> {
 				if (v instanceof Message) {
@@ -89,6 +101,16 @@ public class KStreamBinder extends AbstractBinder<KStream<Object, Object>, Consu
 		}
 		payload = EmbeddedHeaderUtils.embedHeaders(transformed, headers);
 		return payload;
+	}
+
+	@Override
+	public KafkaConsumerProperties getExtendedConsumerProperties(String channelName) {
+		return this.kafkaExtendedBindingProperties.getExtendedConsumerProperties(channelName);
+	}
+
+	@Override
+	public KafkaProducerProperties getExtendedProducerProperties(String channelName) {
+		return this.kafkaExtendedBindingProperties.getExtendedProducerProperties(channelName);
 	}
 
 }
