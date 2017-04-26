@@ -21,7 +21,8 @@ public class KStreamStreamListenerResultAdapter implements StreamListenerResultA
 		((KStreamDelegate<?, ?>) boundElement).setDelegate(streamListenerResult.map((k, v) -> {
 			if (v instanceof Message<?>) {
 				return new KeyValue<>(k, v);
-			} else {
+			}
+			else {
 				return new KeyValue<>(k, MessageBuilder.withPayload(v).build());
 			}
 		}));

@@ -42,7 +42,9 @@ import org.springframework.util.MimeType;
 /**
  * @author Marius Bogoevici
  */
-public class KStreamBinder extends AbstractBinder<KStream<Object, Object>, ExtendedConsumerProperties<KafkaConsumerProperties>, ExtendedProducerProperties<KafkaProducerProperties>> implements ExtendedPropertiesBinder<KStream<Object, Object>, KafkaConsumerProperties, KafkaProducerProperties> {
+public class KStreamBinder extends
+		AbstractBinder<KStream<Object, Object>, ExtendedConsumerProperties<KafkaConsumerProperties>, ExtendedProducerProperties<KafkaProducerProperties>>
+		implements ExtendedPropertiesBinder<KStream<Object, Object>, KafkaConsumerProperties, KafkaProducerProperties> {
 
 	private String[] headers;
 
@@ -50,7 +52,8 @@ public class KStreamBinder extends AbstractBinder<KStream<Object, Object>, Exten
 
 	private final KafkaExtendedBindingProperties kafkaExtendedBindingProperties;
 
-	public KStreamBinder(KStreamBinderProperties kStreamBinderProperties, KafkaTopicProvisioner kafkaTopicProvisioner, KafkaExtendedBindingProperties kafkaExtendedBindingProperties) {
+	public KStreamBinder(KStreamBinderProperties kStreamBinderProperties, KafkaTopicProvisioner kafkaTopicProvisioner,
+			KafkaExtendedBindingProperties kafkaExtendedBindingProperties) {
 		this.headers = EmbeddedHeaderUtils.headersToEmbed(kStreamBinderProperties.getHeaders());
 		this.kafkaTopicProvisioner = kafkaTopicProvisioner;
 		this.kafkaExtendedBindingProperties = kafkaExtendedBindingProperties;
@@ -66,6 +69,7 @@ public class KStreamBinder extends AbstractBinder<KStream<Object, Object>, Exten
 	@Override
 	protected Binding<KStream<Object, Object>> doBindProducer(String name, KStream<Object, Object> outboundBindTarget,
 			ExtendedProducerProperties<KafkaProducerProperties> properties) {
+		this.kafkaTopicProvisioner.provisionProducerDestination(name, properties);
 		if (HeaderMode.embeddedHeaders.equals(properties.getHeaderMode())) {
 			outboundBindTarget = outboundBindTarget.map((k, v) -> {
 				if (v instanceof Message) {
@@ -81,7 +85,8 @@ public class KStreamBinder extends AbstractBinder<KStream<Object, Object>, Exten
 				}
 			});
 		}
-		outboundBindTarget.map((k, v) -> new KeyValue<>((byte[]) k, (byte[]) v)).to(Serdes.ByteArray(), Serdes.ByteArray(), name);
+		outboundBindTarget.map((k, v) -> new KeyValue<>((byte[]) k, (byte[]) v)).to(Serdes.ByteArray(),
+				Serdes.ByteArray(), name);
 		return new DefaultBinding<>(name, null, outboundBindTarget, null);
 	}
 
