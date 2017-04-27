@@ -37,6 +37,7 @@ import org.springframework.integration.codec.Codec;
 import org.springframework.kafka.annotation.EnableKafkaStreams;
 import org.springframework.kafka.annotation.KafkaStreamsDefaultConfiguration;
 import org.springframework.kafka.core.KStreamBuilderFactoryBean;
+import org.springframework.util.ObjectUtils;
 
 import static org.springframework.kafka.annotation.KafkaStreamsDefaultConfiguration.DEFAULT_KSTREAM_BUILDER_BEAN_NAME;
 import static org.springframework.kafka.annotation.KafkaStreamsDefaultConfiguration.DEFAULT_STREAMS_CONFIG_BEAN_NAME;
@@ -75,7 +76,9 @@ public class KStreamBinderSupportAutoConfiguration {
 		props.put(StreamsConfig.KEY_SERDE_CLASS_CONFIG, Serdes.ByteArraySerde.class.getName());
 		props.put(StreamsConfig.VALUE_SERDE_CLASS_CONFIG, Serdes.ByteArraySerde.class.getName());
 		props.put(StreamsConfig.APPLICATION_ID_CONFIG, "default");
-		props.putAll(kStreamBinderProperties.getStreamConfiguration());
+		if (!ObjectUtils.isEmpty(kStreamBinderProperties.getStreamConfiguration())) {
+			props.putAll(kStreamBinderProperties.getStreamConfiguration());
+		}
 		return new StreamsConfig(props);
 	}
 
