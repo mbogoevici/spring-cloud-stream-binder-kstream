@@ -85,7 +85,7 @@ public class KStreamBinder extends
 				}
 			});
 		}
-		outboundBindTarget.map((k, v) -> new KeyValue<>((byte[]) k, (byte[]) v)).to(Serdes.ByteArray(),
+		outboundBindTarget.map((k, v) -> new KeyValue<>((byte[]) k, serializePayloadIfNecessary(v))).to(Serdes.ByteArray(),
 				Serdes.ByteArray(), name);
 		return new DefaultBinding<>(name, null, outboundBindTarget, null);
 	}
