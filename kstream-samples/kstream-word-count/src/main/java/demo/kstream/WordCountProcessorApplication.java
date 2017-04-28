@@ -17,15 +17,20 @@
 package demo.kstream;
 
 import java.util.Arrays;
+import java.util.Date;
 
+import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.TimeWindows;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.cloud.stream.annotation.StreamListener;
+import org.springframework.cloud.stream.kstream.annotations.KStreamProcessor;
 import org.springframework.messaging.handler.annotation.SendTo;
 
 /**
@@ -33,20 +38,27 @@ import org.springframework.messaging.handler.annotation.SendTo;
  */
 @SpringBootApplication
 @EnableBinding(KStreamProcessor.class)
-public class KStreamProcessorApplication {
+@EnableConfigurationProperties(WordCountProcessorProperties.class)
+public class WordCountProcessorApplication {
+
+	@Autowired
+	private WordCountProcessorProperties processorProperties;
 
 	@StreamListener("input")
 	@SendTo("output")
 	public KStream<?, WordCount> process(KStream<?, String> input) {
-		return input
-				.flatMapValues(value -> Arrays.asList(value.toLowerCase().split("\\W+")))
-				.map((key, word) -> new KeyValue<>(word, word))
-				.groupByKey().count(TimeWindows.of(5000), "Counts").toStream()
-				.map((w, c) -> new KeyValue<>(null, new WordCount(w.key(), c)));
+		return input.flatMapValues(value -> Arrays.asList(value.toLowerCase().split("\\W+")))
+				.map((key, word) -> new KeyValue<>(word, word)).groupByKey(Serdes.String(), Serdes.String())
+				.count(processorProperties.getAdvanceBy() > 0
+						? TimeWindows.of(processorProperties.getWindowLength())
+								.advanceBy(processorProperties.getAdvanceBy())
+						: TimeWindows.of(processorProperties.getWindowLength()), processorProperties.getStoreName())
+				.toStream().map((w, c) -> new KeyValue<>(null,
+						new WordCount(w.key(), c, new Date(w.window().start()), new Date(w.window().end()))));
 	}
 
 	public static void main(String[] args) {
-		SpringApplication.run(KStreamProcessorApplication.class, args);
+		SpringApplication.run(WordCountProcessorApplication.class, args);
 	}
 
 }

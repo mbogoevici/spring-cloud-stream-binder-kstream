@@ -16,57 +16,38 @@
 
 package demo.kstream;
 
-import java.util.Date;
-
 /**
  * @author Marius Bogoevici
  */
-public class WordCount {
+public class WordCountProcessorProperties {
 
-	private String word;
+	private int windowLength = 5000;
 
-	private long count;
+	private int advanceBy = 0;
 
-	private Date start;
+	private String storeName = "WordCounts";
 
-	private Date end;
-
-	public WordCount(String word, long count, Date start, Date end) {
-		this.word = word;
-		this.count = count;
-		this.start = start;
-		this.end = end;
+	public int getWindowLength() {
+		return windowLength;
 	}
 
-	public String getWord() {
-		return word;
+	public void setWindowLength(int windowLength) {
+		this.windowLength = windowLength;
 	}
 
-	public void setWord(String word) {
-		this.word = word;
+	public int getAdvanceBy() {
+		return advanceBy;
 	}
 
-	public long getCount() {
-		return count;
+	public void setAdvanceBy(int advanceBy) {
+		this.advanceBy = advanceBy;
 	}
 
-	public void setCount(long count) {
-		this.count = count;
+	public String getStoreName() {
+		return storeName;
 	}
 
-	public Date getStart() {
-		return start;
-	}
-
-	public void setStart(Date start) {
-		this.start = start;
-	}
-
-	public Date getEnd() {
-		return end;
-	}
-
-	public void setEnd(Date end) {
-		this.end = end;
+	public void setStoreName(String storeName) {
+		this.storeName = storeName;
 	}
 }

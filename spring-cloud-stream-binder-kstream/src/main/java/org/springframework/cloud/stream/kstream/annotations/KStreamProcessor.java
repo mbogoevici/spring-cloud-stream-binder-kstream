@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package demo.kstream;
+package org.springframework.cloud.stream.kstream.annotations;
 
 import org.apache.kafka.streams.kstream.KStream;
 
