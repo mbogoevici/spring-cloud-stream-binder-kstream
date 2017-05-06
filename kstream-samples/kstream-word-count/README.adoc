@@ -83,3 +83,10 @@ Send data:
 ----
 dataflow:>http post --target http://localhost:9000 --data 'How much wood can a woodchuck chuck if a woodchuck could chuck wood'
 ----
+
+Monitor the output of the file sink:
+
+[source,bash]
+----
+tail -f /tmp/count-http/counts
+---
