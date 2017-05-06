@@ -16,9 +16,12 @@
 
 package demo.kstream;
 
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
 /**
  * @author Marius Bogoevici
  */
+@ConfigurationProperties(prefix = "kstream.word.count")
 public class WordCountProcessorProperties {
 
 	private int windowLength = 5000;
