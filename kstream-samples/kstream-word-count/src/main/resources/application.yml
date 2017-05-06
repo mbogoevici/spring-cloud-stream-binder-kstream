@@ -1,0 +1,16 @@
+spring.cloud.stream.bindings.output.contentType: application/json
+spring.cloud.stream.kstream.binder.streamConfiguration.commit.interval.ms: 1000
+---
+# The 'standalone' profile is intended to be used only when deploying the module
+# as a standalone application (i.e. not interacting with Spring Cloud Stream clients
+# but interacting via Kafka console producer/consumer
+spring:
+  profiles: standalone
+spring.cloud.stream.kstream.binder.streamConfiguration:
+  key.serde: org.apache.kafka.common.serialization.Serdes$StringSerde # Use a native Kafka Serde for the key
+  value.serde: org.apache.kafka.common.serialization.Serdes$StringSerde # Use a native Kafka Serde for the value
+spring.cloud.stream.bindings.output.producer:
+  headerMode: raw # Incoming data has no embedded headers
+  useNativeEncoding: # Write data using the native Serde
+spring.cloud.stream.bindings.input.consumer:
+  headerMode: raw # Outbound data has no embedded headers
