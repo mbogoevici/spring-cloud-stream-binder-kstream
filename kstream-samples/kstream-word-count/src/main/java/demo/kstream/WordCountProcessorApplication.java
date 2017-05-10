@@ -47,14 +47,23 @@ public class WordCountProcessorApplication {
 	@StreamListener("input")
 	@SendTo("output")
 	public KStream<?, WordCount> process(KStream<?, String> input) {
-		return input.flatMapValues(value -> Arrays.asList(value.toLowerCase().split("\\W+")))
-				.map((key, word) -> new KeyValue<>(word, word)).groupByKey(Serdes.String(), Serdes.String())
-				.count(processorProperties.getAdvanceBy() > 0
-						? TimeWindows.of(processorProperties.getWindowLength())
-								.advanceBy(processorProperties.getAdvanceBy())
-						: TimeWindows.of(processorProperties.getWindowLength()), processorProperties.getStoreName())
-				.toStream().map((w, c) -> new KeyValue<>(null,
-						new WordCount(w.key(), c, new Date(w.window().start()), new Date(w.window().end()))));
+		return input
+				.flatMapValues(value -> Arrays.asList(value.toLowerCase().split("\\W+")))
+				.map((key, word) -> new KeyValue<>(word, word))
+				.groupByKey(Serdes.String(), Serdes.String())
+				.count(configuredTimeWindow(), processorProperties.getStoreName())
+				.toStream()
+				.map((w, c) -> new KeyValue<>(null, new WordCount(w.key(), c, new Date(w.window().start()), new Date(w.window().end()))));
+	}
+
+	/**
+	 * Constructs a {@link TimeWindows} property.
+	 * @return
+	 */
+	private TimeWindows configuredTimeWindow() {
+		return processorProperties.getAdvanceBy() > 0
+				? TimeWindows.of(processorProperties.getWindowLength()).advanceBy(processorProperties.getAdvanceBy())
+				: TimeWindows.of(processorProperties.getWindowLength());
 	}
 
 	public static void main(String[] args) {
