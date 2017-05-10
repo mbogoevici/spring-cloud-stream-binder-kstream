@@ -11,6 +11,6 @@ spring.cloud.stream.kstream.binder.streamConfiguration:
   value.serde: org.apache.kafka.common.serialization.Serdes$StringSerde # Use a native Kafka Serde for the value
 spring.cloud.stream.bindings.output.producer:
   headerMode: raw # Incoming data has no embedded headers
-  useNativeEncoding: # Write data using the native Serde
+  useNativeEncoding: true # Write data using the native Serde
 spring.cloud.stream.bindings.input.consumer:
   headerMode: raw # Outbound data has no embedded headers
