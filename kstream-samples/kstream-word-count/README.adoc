@@ -4,9 +4,8 @@ This is an example of a Spring Cloud Stream processor using Kafka Streams suppor
 
 The example can be run as a standalone application or deployed via Spring Cloud Data Flow.
 
-The example is based on the word count application from the Kafka Streams documentation.
+The example is based on the word count application from the https://github.com/confluentinc/examples/blob/3.2.x/kafka-streams/src/main/java/io/confluent/examples/streams/WordCountLambdaExample.java[reference documentation].
 It uses a single input and a single output.
-The example can be used for multiple inputs and outputs (e.g. joins).
 
 === Prerequisites
 
@@ -57,13 +56,13 @@ Then start the console consumer
 bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic counts
 ----
 
-=== Running in Spring Cloud Data Flow
+=== Running in Spring Cloud Data Flow (local)
 
-Download and install Spring Cloud Data Flow locally.
-
+Download and install the local version Spring Cloud Data Flow.
 Import the http and file applications.
+A complete set of instructions can be found http://cloud.spring.io/spring-cloud-dataflow/[here].
 
-Register the app in the Spring Cloud Data Flow shell.
+Register the Kafka Streams Word Count application in the Spring Cloud Data Flow shell.
 
 [source,bash]
 ----

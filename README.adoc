@@ -75,3 +75,7 @@ public KStream<?, String> splitStrings(KStream<?, String> input) {
       .flatMapValues(value -> Arrays.asList(value.toLowerCase().split("\\W+")));
 }
 ----
+
+=== Examples
+
+A Word Count example that can be run both inside and outside Spring Cloud Data Flow is  link:kstream-samples/kstream-word-count[provided as part of the project].
